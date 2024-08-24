@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Allow bypassing the pre-commit hook
+CHANGES_HOOK_PRECOMMIT=${CHANGES_HOOK_PRECOMMIT:=1}
+
+# Get the current branch name
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# Check if the branch is not 'main' or 'master'
+if [[ $CHANGES_HOOK_PRECOMMIT -gt 0 && "$current_branch" != "main" && "$current_branch" != "master" ]]; then
+  # Run the `changes` command with 'files' and the current branch name as arguments
+  output=$(changes files $current_branch.*)
+
+  # Check if the command produced any output
+  if [[ -z "$output" ]]; then
+    echo "Error: The 'changes' command did not find a change file for the current branch '$current_branch'. Please use 'changes' to record your changes. Use CHANGES_HOOK_PRECOMMIT=0 to bypass."
+    exit 1
+  fi
+fi
+
+# If everything is okay, allow the commit to proceed
+exit 0
