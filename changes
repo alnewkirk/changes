@@ -12,7 +12,7 @@ CHANGES_FILE_CHANGES_MARKDOWN=${CHANGES_FILE_CHANGES_MARKDOWN:=CHANGELOG.md}
 CHANGES_FILE_CHANGES_PLAINTEXT=${CHANGES_FILE_CHANGES_PLAINTEXT:=CHANGELOG}
 CHANGES_FILE_RELEASE_MARKDOWN=${CHANGES_FILE_RELEASE_MARKDOWN:=RELEASE.md}
 CHANGES_FILE_RELEASE_PLAINTEXT=${CHANGES_FILE_RELEASE_PLAINTEXT:=RELEASE}
-CHANGES_VERSION=0.0.3
+CHANGES_VERSION=0.0.4
 
 # Variables for errors.
 CHANGES_ERROR_BASE_PATH="Invalid or missing base path"
@@ -95,6 +95,27 @@ function changes_defect() {
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
 
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
+
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
   fi
@@ -107,10 +128,22 @@ function changes_defect() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -121,6 +154,27 @@ function changes_detract() {
   local SLUG=$(changes_slugify ${1:-"$(changes_token)"})
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
 
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
@@ -134,10 +188,22 @@ function changes_detract() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -164,7 +230,29 @@ function changes_feature() {
   local TYPE="feature"
   local SLUG=$(changes_slugify ${1:-"$(changes_token)"})
   local INTO=${2:-"next"}
+  local TEXT=$3
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
 
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
@@ -178,10 +266,22 @@ function changes_feature() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -524,6 +624,27 @@ function changes_notice() {
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
 
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
+
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
   fi
@@ -536,10 +657,22 @@ function changes_notice() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -610,6 +743,27 @@ function changes_remove() {
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
 
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
+
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
   fi
@@ -622,10 +776,22 @@ function changes_remove() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -707,6 +873,27 @@ function changes_secure() {
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
 
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
+
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
   fi
@@ -719,16 +906,32 @@ function changes_secure() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
 
 # Show changes for a specific release or the current release. Optionally providing a release name.
 function changes_show() {
+  if [ ! "$(ls -A $CHANGES_PATH/*\@* 2>/dev/null)" ]; then
+    exit 1
+  fi
+
   local NAME=${1:-"$(changes_version)"}
   local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$NAME -exec basename {} \; | head -n 1)
 
@@ -781,6 +984,27 @@ function changes_update() {
   local INTO=${2:-"next"}
   local FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
 
+  if [ ! -t 0 ]; then
+    IFS= read -rd '' TEXT
+  fi
+
+  if [[ "$INTO" != "next" ]]; then
+    local HEAD=$(find $CHANGES_PATH/*\@* -maxdepth 0 -type d -name *\@$INTO -exec basename {} \; | head -n 1)
+
+    if [ -z "$HEAD" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    if [ ! "$(ls -A $CHANGES_PATH/$HEAD)" ]; then
+      changes_error $CHANGES_ERROR_RELEASE_NAME
+      exit 1
+    fi
+
+    INTO=$HEAD
+    FILE=$CHANGES_PATH/$INTO/$TYPE/$SLUG
+  fi
+
   if [[ "$FILE" != *.$CHANGES_TYPE ]]; then
     FILE="$FILE.$CHANGES_TYPE"
   fi
@@ -793,10 +1017,22 @@ function changes_update() {
     FORM="$FORM.$CHANGES_TYPE"
   fi
   if [ -f $FORM ] && [ ! -f $FILE ]; then
-    cp $FORM $FILE
+    export CHANGES_FORM_HEAD=$1
+    export CHANGES_FORM_INTO=$INTO
+    export CHANGES_FORM_SLUG=$SLUG
+    export CHANGES_FORM_TEXT=$TEXT
+    export CHANGES_FORM_TYPE=$TYPE
+    envsubst < $FORM > $FILE
+    unset CHANGES_FORM_HEAD
+    unset CHANGES_FORM_INTO
+    unset CHANGES_FORM_SLUG
+    unset CHANGES_FORM_TEXT
+    unset CHANGES_FORM_TYPE
+  elif [ ! -f $FILE ]; then
+    echo "${TEXT:-$1}" > $FILE
   fi
 
-  $EDITOR $FILE
+  $EDITOR $FILE < /dev/tty > /dev/tty
 
   exit 0
 }
@@ -832,163 +1068,163 @@ Manage changes with ease from the command-line using your \$EDITOR. Use the
 "help" command to display this message.
 
 Commands:
-  base PATH                    Change the changes base, i.e. the base path.
-                               Example:
-                                 $PROG base /path/to/changes
+  base PATH                         Change the changes base, i.e. the base path.
+                                    Example:
+                                      $PROG base /path/to/changes
 
-  conf                         Print the environment variables.
-                               Example:
-                                 $PROG conf
+  conf                              Print the environment variables.
+                                    Example:
+                                      $PROG conf
 
-  defect [SLUG] [NAME]         Record defect. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG defect
-                                 $PROG defect user-management
-                                 $PROG defect user-management 0.0.1
+  defect [SLUG] [NAME] [TEXT]       Record defect. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG defect
+                                      $PROG defect user-management
+                                      $PROG defect user-management 0.0.1
 
-  detract [SLUG] [NAME]        Record detraction. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG detract
-                                 $PROG detract user-management
-                                 $PROG detract user-management 0.0.1
+  detract [SLUG] [NAME] [TEXT]      Record detraction. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG detract
+                                      $PROG detract user-management
+                                      $PROG detract user-management 0.0.1
 
-  feature [SLUG] [NAME]        Record feature. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG feature
-                                 $PROG feature user-management
-                                 $PROG feature user-management 0.0.1
+  feature [SLUG] [NAME]             Record feature. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG feature
+                                      $PROG feature user-management
+                                      $PROG feature user-management 0.0.1
 
-  files TERM [TERM, ...]       Find files matching the terms provided and print the filename(s).
-                               Examples:
-                                 $PROG files next
-                                 $PROG files next feature
+  files TERM [TERM, ...]            Find files matching the terms provided and print the filename(s).
+                                    Examples:
+                                      $PROG files next
+                                      $PROG files next feature
 
-  find TERM [TERM, ...]        Find changes matching the terms provided and print the filename(s).
-                               Examples:
-                                 $PROG find user management
-                                 $PROG find user management add
-                                 $PROG find user management remove
+  find TERM [TERM, ...]             Find changes matching the terms provided and print the filename(s).
+                                    Examples:
+                                      $PROG find user management
+                                      $PROG find user management add
+                                      $PROG find user management remove
 
-  form NAME                    Create a change form, i.e. template, using the NAME provided.
-                               Example:
-                                 $PROG form defect
-                                 $PROG form detract
-                                 $PROG form feature
-                                 $PROG form notice
-                                 $PROG form remove
-                                 $PROG form secure
-                                 $PROG form update
+  form NAME                         Create a change form, i.e. template, using the NAME provided.
+                                    Example:
+                                      $PROG form defect
+                                      $PROG form detract
+                                      $PROG form feature
+                                      $PROG form notice
+                                      $PROG form remove
+                                      $PROG form secure
+                                      $PROG form update
 
-  generate                     Generate the version and release documents for the current release.
-                               Example:
-                                 $PROG generate
+  generate                          Generate the version and release documents for the current release.
+                                    Example:
+                                      $PROG generate
 
-  grep TERM [TERM, ...]        Find changes matching the terms provided and print matches using grep.
-                               Examples:
-                                 $PROG grep user management
-                                 $PROG grep user management add
-                                 $PROG grep user management remove
+  grep TERM [TERM, ...]             Find changes matching the terms provided and print matches using grep.
+                                    Examples:
+                                      $PROG grep user management
+                                      $PROG grep user management add
+                                      $PROG grep user management remove
 
-  hook NAME                    Create a runtime hook using the NAME provided.
-                               Example:
-                                 $PROG hook vars
+  hook NAME                         Create a runtime hook using the NAME provided.
+                                    Example:
+                                      $PROG hook vars
 
-  init                         Initialize the changes repository.
-                               Example:
-                                 $PROG init
+  init                              Initialize the changes repository.
+                                    Example:
+                                      $PROG init
 
-  merge [FROM] [INTO]          Merge a release into another, on undo a release by merging into "next".
-                               Example:
-                                 $PROG merge
-                                 $PROG merge 0.0.1
-                                 $PROG merge 0.0.1 0.0.2
-                                 $PROG merge 0.0.2 next
+  merge [FROM] [INTO]               Merge a release into another, on undo a release by merging into "next".
+                                    Example:
+                                      $PROG merge
+                                      $PROG merge 0.0.1
+                                      $PROG merge 0.0.1 0.0.2
+                                      $PROG merge 0.0.2 next
 
-  notice [SLUG] [NAME]         Record notice. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG notice
-                                 $PROG notice user-management
-                                 $PROG notice user-management 0.0.1
+  notice [SLUG] [NAME] [TEXT]       Record notice. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG notice
+                                      $PROG notice user-management
+                                      $PROG notice user-management 0.0.1
 
-  open TERM [TERM, ...]        Find changes matching the terms provided and open the file(s) in the EDITOR.
-                               Examples:
-                                 $PROG open user management
-                                 $PROG open user management add
-                                 $PROG open user management remove
+  open TERM [TERM, ...]             Find changes matching the terms provided and open the file(s) in the EDITOR.
+                                    Examples:
+                                      $PROG open user management
+                                      $PROG open user management add
+                                      $PROG open user management remove
 
-  path PATH                    Change the changes path for changes.
-                               Example:
-                                 $PROG path /path/to/changes/.changes
+  path PATH                         Change the changes path for changes.
+                                    Example:
+                                      $PROG path /path/to/changes/.changes
 
-  release NAME                 Create release and generate changelog and release text and makrdown documents.
-                               Example:
-                                 $PROG release 0.0.1-alpha
-                                 $PROG release 0.0.1-beta
-                                 $PROG release 0.0.1
+  release NAME                      Create release and generate changelog and release text and makrdown documents.
+                                    Example:
+                                      $PROG release 0.0.1-alpha
+                                      $PROG release 0.0.1-beta
+                                      $PROG release 0.0.1
 
-  remove [SLUG] [NAME]         Record removal. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG remove
-                                 $PROG remove user-management
-                                 $PROG remove user-management 0.0.1
+  remove [SLUG] [NAME] [TEXT]       Record removal. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG remove
+                                      $PROG remove user-management
+                                      $PROG remove user-management 0.0.1
 
-  report [TYPE] [FORMAT]       Print pending changes, released changes, or the changes from the current release.
-                               Optionally providing a type in the form of "next", "changes", or "release", and a
-                               format in the form of "markdown" or "plaintext".
-                               Example:
-                                 $PROG report
-                                 $PROG report changes
-                                 $PROG report changes markdown
-                                 $PROG report changes plaintext
-                                 $PROG report release
-                                 $PROG report release markdown
-                                 $PROG report release plaintext
-                                 $PROG report next
+  report [TYPE] [FORMAT]            Print pending changes, released changes, or the changes from the current release.
+                                    Optionally providing a type in the form of "next", "changes", or "release", and a
+                                    format in the form of "markdown" or "plaintext".
+                                    Example:
+                                      $PROG report
+                                      $PROG report changes
+                                      $PROG report changes markdown
+                                      $PROG report changes plaintext
+                                      $PROG report release
+                                      $PROG report release markdown
+                                      $PROG report release plaintext
+                                      $PROG report next
 
-  revert                       Revert the current release and move the changes into the release queue.
-                               Example:
-                                 $PROG revert
+  revert                            Revert the current release and move the changes into the release queue.
+                                    Example:
+                                      $PROG revert
 
-  root NAME                    Change the changes root path name, i.e. under the base.
-                               Example:
-                                 $PROG root .changes
+  root NAME                         Change the changes root path name, i.e. under the base.
+                                    Example:
+                                      $PROG root .changes
 
-  search TERM [TERM, ...]      Find changes matching the terms provided and print the results and filename(s).
-                               Examples:
-                                 $PROG search user management
-                                 $PROG search user management add
-                                 $PROG search user management remove
+  search TERM [TERM, ...]           Find changes matching the terms provided and print the results and filename(s).
+                                    Examples:
+                                      $PROG search user management
+                                      $PROG search user management add
+                                      $PROG search user management remove
 
-  secure [SLUG] [NAME]         Record vulnerability. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG secure
-                                 $PROG secure user-management
-                                 $PROG secure user-management 0.0.1
+  secure [SLUG] [NAME] [TEXT]       Record vulnerability. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG secure
+                                      $PROG secure user-management
+                                      $PROG secure user-management 0.0.1
 
-  show [NAME]                  Show changes for a specific release or the current release. Optionally providing
-                               a release name.
-                               Example:
-                                 $PROG show
-                                 $PROG show 0.0.1
+  show [NAME]                       Show changes for a specific release or the current release. Optionally providing
+                                    a release name.
+                                    Example:
+                                      $PROG show
+                                      $PROG show 0.0.1
 
-  type NAME                    Change the file type, i.e. the file suffix.
-                               Examples:
-                                 $PROG type md
-                                 $PROG type txt
+  type NAME                         Change the file type, i.e. the file suffix.
+                                    Examples:
+                                      $PROG type md
+                                      $PROG type txt
 
-  update [SLUG] [NAME]         Record update. Optionally providing a slug, or filename, and release name.
-                               Example:
-                                 $PROG update
-                                 $PROG update user-management
-                                 $PROG update user-management 0.0.1
+  update [SLUG] [NAME] [TEXT]       Record update. Optionally providing a slug, or filename, and release name.
+                                    Example:
+                                      $PROG update
+                                      $PROG update user-management
+                                      $PROG update user-management 0.0.1
 
-  version                      Print the latest release name.
-                               Example:
-                                 $PROG version
+  version                           Print the latest release name.
+                                    Example:
+                                      $PROG version
 
-  versions                     Print the list of release names in chronological order.
-                               Example:
-                                 $PROG versions
+  versions                          Print the list of release names in chronological order.
+                                    Example:
+                                      $PROG versions
 
 This is "$PROG" version $CHANGES_VERSION. Copyright 2024. All rights reserved.
 EOF

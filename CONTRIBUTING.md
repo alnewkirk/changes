@@ -12,27 +12,9 @@ changes - Curate changelog and release documents with ease, from the command-lin
 - Search and recall recorded changes by content or file name
 - Create category-specific change templates
 
-## Aspirations
-
-The following features and goals should anchor the direction and development of
-this project:
-
-- No dependencies
-- Performance-minded
-- Exception handling
-- Pure-Perl autoboxing
-- Pluggable standard library
-- Consistent naming, intuitive behaviors
-- Robust and accurate documentation
-- Small, flexible, powerful, optional
-- Simple package reflection
-- Utility classes for common behaviors
-- Value classes for primitives data types
-- Composable standards via traits (roles)
-
 ## Installation
 
-Install Venus using [Git](https://git-scm.com):
+Install "changes" using [Git](https://git-scm.com):
 
 ```bash
 git clone /path/to/changes.git
